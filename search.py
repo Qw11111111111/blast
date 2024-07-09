@@ -2,6 +2,20 @@ from Bio.Seq import Seq
 import random as rand
 from tqdm import tqdm
 
+
+class Summary:
+    
+    def __init__(self, summary_dict, word_start: int, query, db) -> None:
+        self._summary_dict = summary_dict
+        self.query = query
+        self._word_start = word_start
+        self.database = db
+        self._generate_summary()
+
+    def _generate_summary(self):
+        self.best_sequence = self.database[list(self._summary_dict[-1].keys())[0][0]].seq[list(self._summary_dict[-1].keys())[0][1] - self._word_start - 1:list(self._summary_dict[-1].keys())[0][1] - self._word_start + len(self.query) - 1]
+        self.similarity = list(self._summary_dict[-1].values())[0] / len(self.query) * 100
+
 class AlignSeq:
 
     def __init__(self, query: Seq, db: Seq, word_len: int = 5, hit_threshhold: int = 3, n_hits: int = 20) -> None:
@@ -25,18 +39,31 @@ class AlignSeq:
 
     def search(self):
         self.get_word()
+        continue_till_found = False
         while True:
             self.set_seeds()
-            self.extend_word()
             if sum([len(hits) for hits in self.hits.values()]) == 0:
-                print("\nno seeds found, retrying with higher word length\n")
+                if not len(self.current_word) == len(self.query):
+                    print("\n   no seeds found, retrying with higher word length    \n")
+                else: 
+                    print("\n   no seeds found, retrying with lower threshhold    \n")
+                if len(self.current_word) == len(self.query) and not continue_till_found:
+                    continue_till_found = bool(str(input("\n  maximum length reached. No seeds could be placed. Continue with lower threshhold    \n  [Y]/[N]    \n")) in ["Y", "y"])
+                    if not continue_till_found:
+                        return False
+                    else:
+                        self.threshhold -= 1
+                elif continue_till_found:
+                    self.threshhold -= 1
             else:
                 break
+            self.extend_word()
 
         self.current_word = self.query
         for i, record in enumerate(self.db):
             record = record.seq
             self.hits[i] = {j: self.get_matches(record[j - self.current_word_start - 1: j - self.current_word_start + len(self.query) - 1]) for j in self.hits[i].keys()}
+        return True
   
     def seed_match(self, score: int, index: int, record: int):
         if self.total_seeds == self.n_hits:
@@ -57,7 +84,7 @@ class AlignSeq:
                 n += 1
         return n
 
-    def summary(self):
+    def summary(self) -> Summary:
         empty_list = []
         seq = [list(map(lambda item: {(i, item[1][0]): item[1][1]}, enumerate(dict(sorted(subdict[1].items(), key = lambda x: x[1])).items()))) for i, subdict in enumerate(self.hits.items())]
 
@@ -65,7 +92,7 @@ class AlignSeq:
                 empty_list += sublist
 
         empty_list = sorted(empty_list, key = lambda item: list(item.values())[0])
-        return empty_list
+        return Summary(empty_list, self.current_word_start, self.query, self.db)
 
     def get_word(self):
         try:
