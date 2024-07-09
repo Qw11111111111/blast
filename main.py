@@ -1,4 +1,4 @@
-from search import ALign_seq
+from search import AlignSeq
 from parse_input import parser, HandleInput
 from time import perf_counter
 
@@ -9,7 +9,7 @@ def main(args):
     n = args.n
     threshhold = args.Threshhold
     length = args.length
-    searcher = ALign_seq(seq, database, length, threshhold, n)
+    searcher = AlignSeq(seq, database, length, threshhold, n)
     t1 = perf_counter()
     searcher.search()
 
@@ -18,7 +18,7 @@ def main(args):
 
     normal = t2 - t1
     if args.exhaustive:
-        searcher_exhaustive = ALign_seq(seq, database, len(seq[0].seq), length, threshhold, n)
+        searcher_exhaustive = AlignSeq(seq, database, len(seq[0].seq), length, threshhold, n)
         t1 = perf_counter()
         searcher_exhaustive.search()
 
@@ -26,9 +26,7 @@ def main(args):
         t2 = perf_counter()
         exhaustive = t2 - t1
 
-    #print(summary)
-    #print(searcher.current_word)
-    #print(searcher.current_word_start)
+
     if args.test:
         print("best hit: ", "\n", "\t", seq, "\n", "\t", database[list(summary[-1].keys())[0][1] - searcher.current_word_start: list(summary[-1].keys())[0][1] - searcher.current_word_start + len(seq)])
     else:
@@ -37,9 +35,7 @@ def main(args):
         print(database[list(summary[-1].keys())[0][0]].seq[list(summary[-1].keys())[0][1] - searcher.current_word_start - 1:list(summary[-1].keys())[0][1] - searcher.current_word_start + len(seq[0].seq) - 1])
         print(f"similarity: {list(summary[-1].values())[0] / len(seq[0].seq) * 100:.3f}%")
 
-        #print("actual best:")
-        #print(database[0].seq[0:len(seq[0].seq)])
-        #print(f"similarity: {get_similarity(database[0].seq[0:len(seq[0].seq)], seq[0].seq) / len(seq[0].seq) * 100:.3f}%")
+
         print(f"Blast: {normal:.3f}s")
         if args.exhaustive:
             print(f"exhaustive: {exhaustive:.3f}s")
