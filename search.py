@@ -1,10 +1,10 @@
 from Bio.Seq import Seq
 import random as rand
-import numpy as np
+from tqdm import tqdm
 
 class ALign_seq:
 
-    def __init__(self, query: Seq, db: Seq, word_len: int = 10, hit_threshhold: int = 1, n_hits: int = 40) -> None:
+    def __init__(self, query: Seq, db: Seq, word_len: int = 5, hit_threshhold: int = 3, n_hits: int = 20) -> None:
         self.query = query[0].seq
         self.db = db
         self.hits = {i:{} for i in range(len(self.db))}
@@ -20,17 +20,20 @@ class ALign_seq:
         self.get_word()
         for i, record in enumerate(self.db):
             record = record.seq
-            for j in range(self.current_word_start, len(record), 1):
+            for j in tqdm(range(self.current_word_start, len(record) - (len(self.query) - (self.current_word_start + len(self.current_word))), 1)):
                 if (score := self.get_matches(record[j:j + len(self.current_word)])) > self.threshhold:
                     self.seed_match(score, j, i)
 
     def search(self):
-        self.set_seeds()
+        while sum([len(hits) for hits in self.hits.values()]) == 0:
+            self.set_seeds()
+            self.extend_word()
+
         self.current_word = self.query
-        print(self.hits)
+        #print(self.hits)
         for i, record in enumerate(self.db):
             record = record.seq         #record[i][j - self.current_word_start: j - self.current_word_start + len(self.query)]
-            self.hits[i] = {j: self.get_matches(record[j - self.current_word_start: j - self.current_word_start + len(self.query)]) for j in self.hits[i].keys()}#dict(map(lambda item: (item[0], self.get_matches(record[item[0]]))))
+            self.hits[i] = {j: self.get_matches(record[j - self.current_word_start - 1: j - self.current_word_start + len(self.query) - 1]) for j in self.hits[i].keys()}#dict(map(lambda item: (item[0], self.get_matches(record[item[0]]))))
   
     def seed_match(self, score: int, index: int, record: int):
         if self.total_seeds == self.n_hits:
@@ -56,7 +59,7 @@ class ALign_seq:
         return n
 
     def summary(self):
-        print(self.hits, "unsorted")
+        #print(self.hits, "unsorted")
         empty_list = []
         seq = [list(map(lambda item: {(i, item[1][0]): item[1][1]}, enumerate(dict(sorted(subdict[1].items(), key = lambda x: x[1])).items()))) for i, subdict in enumerate(self.hits.items())]
 
@@ -64,23 +67,25 @@ class ALign_seq:
                 empty_list += sublist
 
         empty_list = sorted(empty_list, key = lambda item: list(item.values())[0])
-        print(empty_list, "sorted")
+        #print(empty_list, "sorted")
         return empty_list
 
     def get_word(self):
-        seed = rand.randint(0, len(self.query) - self.word_len - 1)
+        try:
+            seed = rand.randint(0, len(self.query) - self.word_len - 1)
+        except:
+            seed = 0
         self.current_word = self.query[seed:seed + self.word_len]
         self.current_word_start = seed
-        print(self.current_word)
-        print(self.current_word_start)
-        print(self.query[seed:])
+        #print(self.current_word)
+        #print(self.current_word_start)
+        #print(self.query[seed:])
     
     def extend_word(self):
-        if self.current_word > 0:
+        if self.current_word_start > 0:
             self.current_word_start -= 1
             self.current_word = self.query[self.current_word_start] + self.current_word
         elif len(self.current_word) < len(self.query):
-            self.current_word += self.query(len(self.current_word))
+            self.current_word += self.query[len(self.current_word)]
         else:
-            #unreachable
             pass
