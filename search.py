@@ -4,36 +4,34 @@ import numpy as np
 
 class ALign_seq:
 
-    def __init__(self, query: Seq, db: Seq, word_len: int = 3, hit_threshhold: int = 1, n_hits: int = 10) -> None:
-        self.query = query
+    def __init__(self, query: Seq, db: Seq, word_len: int = 10, hit_threshhold: int = 1, n_hits: int = 40) -> None:
+        self.query = query[0].seq
         self.db = db
-        self.hits = {i:{} for i in range(2)}
+        self.hits = {i:{} for i in range(len(self.db))}
         self.n_hits = n_hits
         self.threshhold = hit_threshhold
         self.word_len = word_len
         self.current_word = Seq("")
         self.current_word_start = 0
         self.total_seeds = 0
-        self.current_min = (0, 0,len(self.query) + 1)
+        self.current_min = (0, 0, len(self.query) + 1)
 
     def set_seeds(self):
         self.get_word()
-        #for i, record in enumerate(self.db):
-        record = self.db
-        i = 0
-        for j in range(len(self.current_word), len(record), 1):
-            if (score := self.get_matches(record[j - self.word_len:j])) > self.threshhold:
-                self.seed_match(score, j, i)
+        for i, record in enumerate(self.db):
+            record = record.seq
+            for j in range(self.current_word_start, len(record), 1):
+                if (score := self.get_matches(record[j:j + len(self.current_word)])) > self.threshhold:
+                    self.seed_match(score, j, i)
 
     def search(self):
         self.set_seeds()
         self.current_word = self.query
-        record = self.db
-        i = 0
         print(self.hits)
-        #for i, record in enumerate(self.db):
-        self.hits[i] = {j: self.get_matches(record[j - self.current_word_start: j - self.current_word_start + len(self.query)]) for j in self.hits[i].keys()}#dict(map(lambda item: (item[0], self.get_matches(record[item[0]]))))
-                                                #record[j]
+        for i, record in enumerate(self.db):
+            record = record.seq         #record[i][j - self.current_word_start: j - self.current_word_start + len(self.query)]
+            self.hits[i] = {j: self.get_matches(record[j - self.current_word_start: j - self.current_word_start + len(self.query)]) for j in self.hits[i].keys()}#dict(map(lambda item: (item[0], self.get_matches(record[item[0]]))))
+  
     def seed_match(self, score: int, index: int, record: int):
         if self.total_seeds == self.n_hits:
             if score <= self.current_min[2]:
@@ -69,10 +67,13 @@ class ALign_seq:
         print(empty_list, "sorted")
         return empty_list
 
-    def get_word(self, depth: int = 0):
-        seed = rand.randint(0, len(self.query) - self.word_len - depth - 1)
-        self.current_word = self.query[seed:seed + self.word_len + depth]
+    def get_word(self):
+        seed = rand.randint(0, len(self.query) - self.word_len - 1)
+        self.current_word = self.query[seed:seed + self.word_len]
         self.current_word_start = seed
+        print(self.current_word)
+        print(self.current_word_start)
+        print(self.query[seed:])
     
     def extend_word(self):
         if self.current_word > 0:

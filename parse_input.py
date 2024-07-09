@@ -5,8 +5,8 @@ import random as rand
 
 def parser():
     parser = ArgumentParser()
-    #parser.add_argument("sequence")
-    #parser.add_argument("database")
+    parser.add_argument("sequence")
+    parser.add_argument("database")
     parser.add_argument("-t", "--test", action="store_false", default=True)
     args = parser.parse_args()
     return args
@@ -14,8 +14,8 @@ def parser():
 class HandleInput:
 
     def __init__(self, args) -> None:
-        #self.file = args.sequence
-        #self.db = args.database
+        self.file = args.sequence
+        self.db = args.database
         self.test = False
         if args.test:
             self.test = True
@@ -25,14 +25,18 @@ class HandleInput:
         if self.test:
             return Seq("AAATTTCCCGGG")
         with open(self.file, "r") as f:
-            seq = SeqIO.parse(f)
+            seq = list(SeqIO.parse(f, "fasta"))
 
         return seq
     
     def parse_db(self):
         if self.test:
             return Seq(self.generate_random_sequence())
-        pass
+        else:
+            with open(self.db, "r") as f:
+                seq = list(SeqIO.parse(f, "fasta"))
+
+        return seq
 
     def generate_random_sequence(self):
         seq = ""
