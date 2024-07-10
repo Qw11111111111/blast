@@ -35,7 +35,7 @@ class AlignSeq:
         for i, record in enumerate(self.db):
             record = record.seq
             for j in tqdm(range(self.current_word_start, len(record) - (len(self.query) - (self.current_word_start + len(self.current_word))), 1)):
-                if (score := self.get_matches(record[j:j + len(self.current_word)])) > self.threshhold:
+                if (score := self.get_matches(record[j:j + len(self.current_word)])) >= self.threshhold:
                     self.seed_match(score, j, i)
 
     def search(self):

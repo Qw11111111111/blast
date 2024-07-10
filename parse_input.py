@@ -8,9 +8,9 @@ def parser():
     parser.add_argument("sequence")
     parser.add_argument("database")
     parser.add_argument("-e", "--exhaustive", action="store_true", default=False)
-    parser.add_argument("-l", "--length", action="store", type=int, default=5, help="the length of the word durign search")
-    parser.add_argument("-T", "--Threshhold", action="store", type=int, default=4, help="the threshhold for sequences to be accepted")
-    parser.add_argument("-n", action="store", type=int, default=42, help="number of postions stored")
+    parser.add_argument("-l", "--length", action="store", type=int, default=10, help="the length of the word durign search")
+    parser.add_argument("-T", "--Threshhold", action="store", type=int, default=10, help="the threshhold for sequences to be accepted")
+    parser.add_argument("-n", action="store", type=int, default=100, help="number of postions stored")
     args = parser.parse_args()
     return args
 
