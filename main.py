@@ -31,26 +31,19 @@ def main(args):
         t2 = perf_counter()
         exhaustive = t2 - t1
 
-    if args.test:
-        print("best hit: ", "\n", "\t", seq, "\n", "\t", database[list(summary[-1].keys())[0][1] - searcher.current_word_start: list(summary[-1].keys())[0][1] - searcher.current_word_start + len(seq)])
     else:
         print("best hit:")
         print(f"Query:  {seq[0].seq}")
         print(f"DB_Seq: {summary.best_sequence}")
         print(f"Similarity: {summary.similarity:.3f}%")
-        #print(database[list(summary[-1].keys())[0][0]].seq[list(summary[-1].keys())[0][1] - searcher.current_word_start - 1:list(summary[-1].keys())[0][1] - searcher.current_word_start + len(seq[0].seq) - 1])
-        #print(f"similarity: {list(summary[-1].values())[0] / len(seq[0].seq) * 100:.3f}%")
-
-
         print(f"Blast: {normal:.3f}s")
+       
         if args.exhaustive:
             print(f"exhaustive: {exhaustive:.3f}s")
-
             print("exhaustive sequence: ")
             print(f"Query:  {seq[0].seq}")
             print(f"DB_Seq: {summary2.best_sequence}")
             print(f"Similarity: {summary2.similarity:.3f}%")
-            #print(database[list(summary2[-1].keys())[0][0]].seq[list(summary2[-1].keys())[0][1] - searcher_exhaustive.current_word_start:list(summary2[-1].keys())[0][1] - searcher_exhaustive.current_word_start + len(seq[0].seq)])
 
 def get_similarity(seq1, seq2):
     n = 0

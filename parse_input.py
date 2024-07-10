@@ -7,10 +7,9 @@ def parser():
     parser = ArgumentParser()
     parser.add_argument("sequence")
     parser.add_argument("database")
-    parser.add_argument("-t", "--test", action="store_true", default=False)
     parser.add_argument("-e", "--exhaustive", action="store_true", default=False)
     parser.add_argument("-l", "--length", action="store", type=int, default=5, help="the length of the word durign search")
-    parser.add_argument("-T", "--Threshhold", action="store", type=int, default=3, help="the threshhold for sequences to be accepted")
+    parser.add_argument("-T", "--Threshhold", action="store", type=int, default=4, help="the threshhold for sequences to be accepted")
     parser.add_argument("-n", action="store", type=int, default=42, help="number of postions stored")
     args = parser.parse_args()
     return args
@@ -20,26 +19,15 @@ class HandleInput:
     def __init__(self, args) -> None:
         self.file = args.sequence
         self.db = args.database
-        self.test = False
-        if args.test:
-            self.test = True
-        pass
 
     def parse_fasta(self):
-        if self.test:
-            return Seq("AAATTTCCCGGG")
         with open(self.file, "r") as f:
             seq = list(SeqIO.parse(f, "fasta"))
-
         return seq
     
     def parse_db(self):
-        if self.test:
-            return Seq(self.generate_random_sequence())
-        else:
-            with open(self.db, "r") as f:
-                seq = list(SeqIO.parse(f, "fasta"))
-
+        with open(self.db, "r") as f:
+            seq = list(SeqIO.parse(f, "fasta"))
         return seq
 
     def generate_random_sequence(self):

@@ -13,7 +13,8 @@ class Summary:
         self._generate_summary()
 
     def _generate_summary(self):
-        self.best_sequence = self.database[list(self._summary_dict[-1].keys())[0][0]].seq[list(self._summary_dict[-1].keys())[0][1] - self._word_start - 1:list(self._summary_dict[-1].keys())[0][1] - self._word_start + len(self.query) - 1]
+        best_index = list(self._summary_dict[-1].keys())[0]  
+        self.best_sequence = self.database[best_index[0]].seq[best_index[1] - self._word_start:best_index[1] + len(self.query) - self._word_start]
         self.similarity = list(self._summary_dict[-1].values())[0] / len(self.query) * 100
 
 class AlignSeq:
@@ -62,7 +63,7 @@ class AlignSeq:
         self.current_word = self.query
         for i, record in enumerate(self.db):
             record = record.seq
-            self.hits[i] = {j: self.get_matches(record[j - self.current_word_start - 1: j - self.current_word_start + len(self.query) - 1]) for j in self.hits[i].keys()}
+            self.hits[i] = {j: self.get_matches(record[j - self.current_word_start: j + len(self.query) - self.current_word_start]) for j in self.hits[i].keys()}
         return True
   
     def seed_match(self, score: int, index: int, record: int):
@@ -106,7 +107,9 @@ class AlignSeq:
         if self.current_word_start > 0:
             self.current_word_start -= 1
             self.current_word = self.query[self.current_word_start] + self.current_word
+            self.word_len += 1
         elif len(self.current_word) < len(self.query):
             self.current_word += self.query[len(self.current_word)]
+            self.word_len += 1
         else:
             pass
